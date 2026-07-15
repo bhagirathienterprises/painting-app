@@ -62,8 +62,12 @@ export default function WorkOrderPage() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: 20, fontFamily: 'sans-serif' }}>
-      <h1 style={{ color: companyInfo.themeColor }}>New Work Order</h1>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%)', padding: 24, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '24px 20px 40px' }}>
+        <div style={{ marginBottom: 20 }}>
+          <h1 style={{ color: companyInfo.themeColor, margin: '0 0 6px', fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em' }}>New Work Order</h1>
+          <p style={{ color: '#64748b', margin: 0, fontSize: 14 }}>Coordinate teams and operations with a clearer, calmer workspace.</p>
+        </div>
 
       <label>Project</label>
       <select value={projectId} onChange={e => setProjectId(e.target.value)} style={inputStyle}>
@@ -88,12 +92,13 @@ export default function WorkOrderPage() {
       </button>
 
       {pdfUrl && (
-        <div style={{ marginTop: 20, padding: 16, background: '#f0f4fa', borderRadius: 8 }}>
-          <p style={{ fontWeight: 'bold', color: companyInfo.themeColor }}>Work Order {woNo} ready</p>
+        <div style={{ marginTop: 20, padding: 18, background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)', borderRadius: 18, border: '1px solid #e5ebf2', boxShadow: '0 12px 30px rgba(15, 23, 42, 0.06)' }}>
+          <p style={{ fontWeight: 700, color: companyInfo.themeColor, marginBottom: 12 }}>Work Order {woNo} ready</p>
           <a href={pdfUrl} download={`${woNo}.pdf`} style={secondaryBtnStyle}>Download PDF</a>
-          <button onClick={handleShare} style={{ ...primaryBtnStyle, background: '#25D366', marginTop: 8 }}>Share on WhatsApp</button>
+          <button onClick={handleShare} style={{ ...primaryBtnStyle, background: 'linear-gradient(135deg, #25D366 0%, #1fbf5a 100%)', width: 'auto', marginTop: 10 }}>Share on WhatsApp</button>
         </div>
       )}
+      </div>
     </div>
   )
 }

@@ -42,8 +42,12 @@ export default function ExpensesPage() {
   }
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto', padding: 20, fontFamily: 'sans-serif' }}>
-      <h1 style={{ color: companyInfo.themeColor }}>Expense Tracker</h1>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%)', padding: 24, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '24px 20px 40px' }}>
+        <div style={{ marginBottom: 20 }}>
+          <h1 style={{ color: companyInfo.themeColor, margin: '0 0 6px', fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em' }}>Expense Tracker</h1>
+          <p style={{ color: '#64748b', margin: 0, fontSize: 14 }}>Track spending with a calm and focused experience.</p>
+        </div>
 
       <label>Project</label>
       <select value={projectId} onChange={e => setProjectId(e.target.value)} style={inputStyle}>
@@ -81,6 +85,7 @@ export default function ExpensesPage() {
           )}
         </div>
       ))}
+      </div>
     </div>
   )
 }

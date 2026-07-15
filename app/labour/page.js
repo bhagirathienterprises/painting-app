@@ -55,8 +55,12 @@ export default function LabourPage() {
   }
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto', padding: 20, fontFamily: 'sans-serif' }}>
-      <h1 style={{ color: companyInfo.themeColor }}>Labour Management</h1>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%)', padding: 24, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '24px 20px 40px' }}>
+        <div style={{ marginBottom: 20 }}>
+          <h1 style={{ color: companyInfo.themeColor, margin: '0 0 6px', fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em' }}>Labour Management</h1>
+          <p style={{ color: '#64748b', margin: 0, fontSize: 14 }}>Organize teams and workforce data with a premium experience.</p>
+        </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <button onClick={() => setTab('labour')} style={tab === 'labour' ? primaryBtnStyle : smallBtnStyle}>Labour</button>
@@ -109,6 +113,7 @@ export default function LabourPage() {
           ))}
         </>
       )}
+      </div>
     </div>
   )
 }
