@@ -47,13 +47,6 @@ export default function QuotationPage() {
         .single()
       if (custErr) throw custErr
 
-      const { data: project, error: projErr } = await supabase
-        .from('projects')
-        .insert({ customer_id: customer.id, title: customerName, status: 'quoted' })
-        .select()
-        .single()
-      if (projErr) throw projErr
-
       const qNo = await getNextDocNumber('quotations', 'quotation_no', 'BG')
 
       const sub = parseFloat(subtotal)
@@ -62,7 +55,7 @@ export default function QuotationPage() {
       const grandTotal = sub + cgst + sgst
 
       const { error: quoteErr } = await supabase.from('quotations').insert({
-        project_id: project.id,
+        customer_id: customer.id,
         quotation_no: qNo,
         prepared_by: preparedBy,
         work_items: workItems.filter(w => w.trim() !== ''),
@@ -71,6 +64,7 @@ export default function QuotationPage() {
         sgst,
         grand_total: grandTotal,
         terms,
+        status: 'pending',
       })
       if (quoteErr) throw quoteErr
 

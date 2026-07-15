@@ -7,7 +7,8 @@ import { colors, spacing, typography, shadows, borderRadius, animations } from '
 
 const links = [
   { href: '/projects', label: 'Projects', icon: '📁' },
-  { href: '/quotation', label: 'New Quotation', icon: '📋' },
+  { href: '/quotations', label: 'Quotations', icon: '📋' },
+  { href: '/quotation', label: 'New Quotation', icon: '✏️' },
   { href: '/invoice', label: 'New Sales Invoice', icon: '💳' },
   { href: '/labour', label: 'Labour & Teams', icon: '👥' },
   { href: '/attendance', label: 'Daily Attendance', icon: '📅' },
