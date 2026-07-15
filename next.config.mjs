@@ -1,10 +1,12 @@
 import withPWA from 'next-pwa'
 
-   const withPWAConfig = withPWA({
-     dest: 'public',
-     disable: process.env.NODE_ENV === 'development',
-   })
+const withPWAConfig = withPWA({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV !== 'production',
+})
 
-   export default withPWAConfig({
-     // your existing config stays here
-   })
+const nextConfig = {
+  turbopack: {},
+}
+
+export default withPWAConfig(nextConfig)

@@ -12,10 +12,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-     title: 'Painting Business Manager',
-     manifest: '/manifest.json',
-     themeColor: '#1B2A4A',
-   }
+  title: 'Painting Business Manager',
+  manifest: '/manifest.json',
+}
+
+export const viewport = {
+  themeColor: '#1B2A4A',
+}
 
 export default function RootLayout({ children }) {
   return (
