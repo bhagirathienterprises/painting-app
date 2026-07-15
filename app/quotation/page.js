@@ -40,12 +40,24 @@ export default function QuotationPage() {
     }
     setLoading(true)
     try {
-      const { data: customer, error: custErr } = await supabase
+      // Insert customer
+      const { data: custInsert, error: custInsertErr } = await supabase
         .from('customers')
         .insert({ name: customerName, type: customerType, phone: customerPhone })
-        .select()
-        .single()
-      if (custErr) throw custErr
+      
+      if (custInsertErr) throw custInsertErr
+
+      // Fetch the customer we just inserted
+      const { data: customers, error: custFetchErr } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('phone', customerPhone)
+        .eq('name', customerName)
+      
+      if (custFetchErr) throw custFetchErr
+      if (!customers || customers.length === 0) throw new Error('Failed to get customer ID')
+      
+      const customer = customers[0]
 
       const qNo = await getNextDocNumber('quotations', 'quotation_no', 'BG')
 

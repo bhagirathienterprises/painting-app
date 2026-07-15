@@ -37,7 +37,7 @@ export default function QuotationsPage() {
     setLoading(true)
     try {
       // Create project from quotation
-      const { data: project, error: projErr } = await supabase
+      const { error: projInsertErr } = await supabase
         .from('projects')
         .insert({
           customer_id: quotation.customer_id,
@@ -45,9 +45,21 @@ export default function QuotationsPage() {
           quoted_price: quotation.grand_total,
           status: 'ongoing',
         })
-        .select()
-        .single()
-      if (projErr) throw projErr
+      if (projInsertErr) throw projInsertErr
+
+      // Fetch the project we just inserted
+      const { data: projects, error: projFetchErr } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('title', quotation.customers.name)
+        .eq('customer_id', quotation.customer_id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+      
+      if (projFetchErr) throw projFetchErr
+      if (!projects || projects.length === 0) throw new Error('Failed to get project ID')
+      
+      const project = projects[0]
 
       // Link quotation to project
       const { error: linkErr } = await supabase.from('quotations').update({ project_id: project.id }).eq('id', quotation.id)
