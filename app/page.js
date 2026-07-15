@@ -1,43 +1,148 @@
+'use client'
+
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { companyInfo } from '../lib/companyInfo'
+import { colors, spacing, typography, shadows, borderRadius, animations } from '../lib/designSystem'
 
 const links = [
-  { href: '/quotation', label: 'New Quotation' },
-  { href: '/invoice', label: 'New Sales Invoice' },
-  { href: '/labour', label: 'Labour & Teams' },
-  { href: '/attendance', label: 'Daily Attendance' },
-  { href: '/work-orders', label: 'Work Orders' },
-  { href: '/inventory', label: 'Inventory' },
-  { href: '/expenses', label: 'Expenses' },
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/gst', label: 'GST Tracker' },
+  { href: '/quotation', label: 'New Quotation', icon: '📋' },
+  { href: '/invoice', label: 'New Sales Invoice', icon: '💳' },
+  { href: '/labour', label: 'Labour & Teams', icon: '👥' },
+  { href: '/attendance', label: 'Daily Attendance', icon: '📅' },
+  { href: '/work-orders', label: 'Work Orders', icon: '📝' },
+  { href: '/inventory', label: 'Inventory', icon: '📦' },
+  { href: '/expenses', label: 'Expenses', icon: '💰' },
+  { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+  { href: '/gst', label: 'GST Tracker', icon: '🧾' },
 ]
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.3,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+}
 
 export default function Home() {
   return (
-    <div style={{ minHeight: '100vh', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: 'linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%)', padding: 24 }}>
-      <div style={{ maxWidth: 560, margin: '0 auto', paddingTop: 24 }}>
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 96, height: 96, borderRadius: 30, background: 'white', boxShadow: '0 12px 40px rgba(15, 23, 42, 0.08)', marginBottom: 16 }}>
-            <img src={companyInfo.logo} alt="logo" style={{ width: 70, height: 70, objectFit: 'contain' }} />
-          </div>
-          <h1 style={{ color: companyInfo.themeColor, marginBottom: 6, fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em' }}>{companyInfo.name}</h1>
-          <p style={{ color: '#64748b', margin: 0, fontSize: 15 }}>{companyInfo.tagline}</p>
-        </div>
+    <motion.div
+      initial="hidden"
+      animate="show"
+      exit="hidden"
+      style={{
+        minHeight: '100vh',
+        background: `linear-gradient(135deg, ${colors.background} 0%, ${colors.backgroundDark} 100%)`,
+        padding: spacing.xxxl,
+        fontFamily: typography.fontFamily.body,
+      }}
+    >
+      <div style={{ maxWidth: '760px', margin: '0 auto', paddingTop: spacing.xl }}>
+        {/* Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={animations.transition.elegant}
+          style={{ textAlign: 'center', marginBottom: spacing.xxxl }}
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, ...animations.transition.elegant }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '96px',
+              height: '96px',
+              borderRadius: borderRadius.xxl,
+              background: colors.card,
+              boxShadow: shadows.lg,
+              marginBottom: spacing.xl,
+            }}
+          >
+            <img src={companyInfo.logo} alt="logo" style={{ width: '70px', height: '70px', objectFit: 'contain' }} />
+          </motion.div>
+          
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, ...animations.transition.elegant }}
+            style={{
+              color: colors.textPrimary,
+              marginBottom: spacing.md,
+              fontSize: typography.fontSize.h1,
+              fontWeight: typography.fontWeight.extrabold,
+              letterSpacing: '-0.02em',
+              fontFamily: typography.fontFamily.display,
+            }}
+          >
+            {companyInfo.name}
+          </motion.h1>
+          
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, ...animations.transition.elegant }}
+            style={{
+              color: colors.textSecondary,
+              margin: 0,
+              fontSize: typography.fontSize.body,
+              fontFamily: typography.fontFamily.body,
+            }}
+          >
+            {companyInfo.tagline}
+          </motion.p>
+        </motion.div>
 
-        <div style={{ display: 'grid', gap: 12 }}>
-          {links.map(l => (
-            <Link key={l.href} href={l.href} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.9)', border: '1px solid #e5ebf2',
-              color: '#0f172a', padding: '16px 18px', borderRadius: 16, textDecoration: 'none', fontWeight: 600,
-              boxShadow: '0 8px 24px rgba(15, 23, 42, 0.05)', backdropFilter: 'blur(10px)',
-            }}>
-              <span>{l.label}</span>
-              <span style={{ color: companyInfo.themeColor, fontSize: 18 }}>›</span>
-            </Link>
+        {/* Links Grid */}
+        <motion.div
+          variants={containerVariants}
+          style={{ display: 'grid', gap: spacing.lg }}
+        >
+          {links.map((l, idx) => (
+            <motion.div key={l.href} variants={itemVariants}>
+              <Link href={l.href} style={{ textDecoration: 'none' }}>
+                <motion.div
+                  whileHover={{ y: -4, boxShadow: shadows.xl }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: colors.card,
+                    border: `1px solid ${colors.border}`,
+                    color: colors.textPrimary,
+                    padding: `${spacing.lg} ${spacing.xl}`,
+                    borderRadius: borderRadius.lg,
+                    textDecoration: 'none',
+                    fontWeight: typography.fontWeight.semibold,
+                    boxShadow: shadows.md,
+                    backdropFilter: 'blur(10px)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.lg }}>
+                    <span style={{ fontSize: '24px' }}>{l.icon}</span>
+                    <span>{l.label}</span>
+                  </div>
+                  <span style={{ color: colors.primary, fontSize: '20px' }}>›</span>
+                </motion.div>
+              </Link>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 }
