@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { getNextDocNumber } from '../../lib/docNumber'
 import { generateQuotationPdf } from '../../lib/generateQuotationPdf'
 import { companyInfo } from '../../lib/companyInfo'
-import { inputStyle, primaryBtnStyle, secondaryBtnStyle, smallBtnStyle, dangerBtnStyle } from '../../lib/uiStyles'
+import { inputStyle, labelStyle, primaryBtnStyle, secondaryBtnStyle, smallBtnStyle, dangerBtnStyle } from '../../lib/uiStyles'
 
 const DEFAULT_TERMS = `1. 50% advance required to begin work, balance on completion.
 2. Rates valid for 15 days from quotation date.
@@ -124,22 +124,22 @@ export default function QuotationPage() {
           <p style={{ color: '#64748b', margin: 0, fontSize: 14 }}>Build polished proposals with a refined, premium workflow.</p>
         </div>
 
-      <label>Customer Name</label>
+      <label style={labelStyle}>Customer Name</label>
       <input value={customerName} onChange={e => setCustomerName(e.target.value)} style={inputStyle} />
 
-      <label>Customer Type</label>
+      <label style={labelStyle}>Customer Type</label>
       <select value={customerType} onChange={e => setCustomerType(e.target.value)} style={inputStyle}>
         <option value="individual">Individual</option>
         <option value="company">Company</option>
       </select>
 
-      <label>Customer Phone</label>
+      <label style={labelStyle}>Customer Phone</label>
       <input value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} style={inputStyle} />
 
-      <label>Prepared By</label>
+      <label style={labelStyle}>Prepared By</label>
       <input value={preparedBy} onChange={e => setPreparedBy(e.target.value)} style={inputStyle} />
 
-      <label>Work Items</label>
+      <label style={labelStyle}>Work Items</label>
       {workItems.map((item, idx) => (
         <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
           <input value={item} onChange={e => updateWorkItem(idx, e.target.value)} placeholder={`Work item ${idx + 1}`} style={{ ...inputStyle, flex: 1, marginBottom: 0 }} />
@@ -148,10 +148,10 @@ export default function QuotationPage() {
       ))}
       <button onClick={addWorkItem} style={smallBtnStyle}>+ Add work item</button>
 
-      <label style={{ marginTop: 16, display: 'block' }}>Subtotal Amount (before GST) — Rs.</label>
+      <label style={{ ...labelStyle, marginTop: 16, display: 'block' }}>Subtotal Amount (before GST) — Rs.</label>
       <input type="number" value={subtotal} onChange={e => setSubtotal(e.target.value)} style={inputStyle} />
 
-      <label>Terms & Conditions</label>
+      <label style={labelStyle}>Terms & Conditions</label>
       <textarea value={terms} onChange={e => setTerms(e.target.value)} rows={6} style={inputStyle} />
 
       <button onClick={handleGenerate} disabled={loading || !customerName || !customerPhone || !preparedBy || !subtotal} style={{ ...primaryBtnStyle, marginTop: 16 }}>

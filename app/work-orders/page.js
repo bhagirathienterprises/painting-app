@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { getNextDocNumber } from '../../lib/docNumber'
 import { generateWorkOrderPdf } from '../../lib/generateWorkOrderPdf'
-import { inputStyle, primaryBtnStyle, secondaryBtnStyle } from '../../lib/uiStyles'
+import { inputStyle, labelStyle, primaryBtnStyle, secondaryBtnStyle } from '../../lib/uiStyles'
 import { companyInfo } from '../../lib/companyInfo'
 
 export default function WorkOrderPage() {
@@ -69,22 +69,22 @@ export default function WorkOrderPage() {
           <p style={{ color: '#64748b', margin: 0, fontSize: 14 }}>Coordinate teams and operations with a clearer, calmer workspace.</p>
         </div>
 
-      <label>Project</label>
+      <label style={labelStyle}>Project</label>
       <select value={projectId} onChange={e => setProjectId(e.target.value)} style={inputStyle}>
         <option value="">-- Select --</option>
         {projects.map(p => <option key={p.id} value={p.id}>{p.title} ({p.customers?.name})</option>)}
       </select>
 
-      <label>Team</label>
+      <label style={labelStyle}>Team</label>
       <select value={teamId} onChange={e => setTeamId(e.target.value)} style={inputStyle}>
         <option value="">-- None --</option>
         {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
       </select>
 
-      <label>Equipment Needed (e.g. boom lift, scaffolding)</label>
+      <label style={labelStyle}>Equipment Needed (e.g. boom lift, scaffolding)</label>
       <input value={equipment} onChange={e => setEquipment(e.target.value)} style={inputStyle} />
 
-      <label>Instructions</label>
+      <label style={labelStyle}>Instructions</label>
       <textarea value={instructions} onChange={e => setInstructions(e.target.value)} rows={5} style={inputStyle} />
 
       <button onClick={handleGenerate} disabled={loading} style={primaryBtnStyle}>

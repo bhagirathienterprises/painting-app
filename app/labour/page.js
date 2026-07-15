@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabaseClient'
-import { inputStyle, primaryBtnStyle, smallBtnStyle, dangerBtnStyle, cardStyle } from '../../lib/uiStyles'
+import { inputStyle, labelStyle, primaryBtnStyle, smallBtnStyle, dangerBtnStyle, cardStyle } from '../../lib/uiStyles'
 import { companyInfo } from '../../lib/companyInfo'
 
 export default function LabourPage() {
@@ -70,11 +70,16 @@ export default function LabourPage() {
       {tab === 'labour' && (
         <>
           <div style={cardStyle}>
-            <h3>Add Labour</h3>
+            <h3 style={{ color: '#0f172a', fontSize: 18 }}>Add Labour</h3>
+            <label style={labelStyle}>Name</label>
             <input placeholder="Name" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+            <label style={labelStyle}>City</label>
             <input placeholder="City" value={city} onChange={e => setCity(e.target.value)} style={inputStyle} />
+            <label style={labelStyle}>Aadhaar No.</label>
             <input placeholder="Aadhaar No." value={aadhaar} onChange={e => setAadhaar(e.target.value)} style={inputStyle} />
+            <label style={labelStyle}>Contact No.</label>
             <input placeholder="Contact No." value={contact} onChange={e => setContact(e.target.value)} style={inputStyle} />
+            <label style={labelStyle}>Daily Wage (Rs.)</label>
             <input placeholder="Daily Wage (Rs.)" type="number" value={wage} onChange={e => setWage(e.target.value)} style={inputStyle} />
             <button onClick={addLabour} style={primaryBtnStyle}>Add Labour</button>
           </div>
@@ -94,11 +99,12 @@ export default function LabourPage() {
       {tab === 'teams' && (
         <>
           <div style={cardStyle}>
-            <h3>Create Team</h3>
+            <h3 style={{ color: '#0f172a', fontSize: 18 }}>Create Team</h3>
+            <label style={labelStyle}>Team Name</label>
             <input placeholder="Team Name" value={teamName} onChange={e => setTeamName(e.target.value)} style={inputStyle} />
-            <p style={{ fontSize: 13 }}>Select members:</p>
+            <label style={labelStyle}>Select members:</label>
             {labourList.map(l => (
-              <label key={l.id} style={{ display: 'block', marginBottom: 4 }}>
+              <label key={l.id} style={{ display: 'block', marginBottom: 8, color: '#0f172a', fontWeight: 500, fontSize: 14 }}>
                 <input type="checkbox" checked={selectedMembers.includes(l.id)} onChange={() => toggleMember(l.id)} /> {l.name}
               </label>
             ))}

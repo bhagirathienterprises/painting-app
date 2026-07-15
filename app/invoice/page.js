@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { getNextDocNumber } from '../../lib/docNumber'
 import { generateInvoicePdf } from '../../lib/generateInvoicePdf'
 import { companyInfo } from '../../lib/companyInfo'
-import { inputStyle, primaryBtnStyle, secondaryBtnStyle } from '../../lib/uiStyles'
+import { inputStyle, labelStyle, primaryBtnStyle, secondaryBtnStyle } from '../../lib/uiStyles'
 
 export default function InvoicePage() {
   const [quotations, setQuotations] = useState([])

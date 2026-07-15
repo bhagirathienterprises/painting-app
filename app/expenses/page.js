@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabaseClient'
-import { inputStyle, primaryBtnStyle, cardStyle } from '../../lib/uiStyles'
+import { inputStyle, labelStyle, primaryBtnStyle, cardStyle } from '../../lib/uiStyles'
 import { companyInfo } from '../../lib/companyInfo'
 
 export default function ExpensesPage() {

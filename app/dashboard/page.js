@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabaseClient'
-import { inputStyle, cardStyle } from '../../lib/uiStyles'
+import { inputStyle, labelStyle, cardStyle } from '../../lib/uiStyles'
 import { companyInfo } from '../../lib/companyInfo'
 
 export default function DashboardPage() {
@@ -73,16 +73,17 @@ export default function DashboardPage() {
         <h3>This Month — All Projects</h3>
         {monthlyStats && (
           <>
-            <p>Total Sales: Rs. {monthlyStats.sales.toFixed(2)}</p>
-            <p>Total Expenses: Rs. {monthlyStats.totalExpenses.toFixed(2)}</p>
-            <p>Total Labour: Rs. {monthlyStats.totalLabour.toFixed(2)}</p>
-            <p>Profit/Loss: <ProfitLoss value={monthlyStats.profit} /></p>
+            <p style={{ margin: '8px 0', color: '#0f172a' }}>Total Sales: Rs. {monthlyStats.sales.toFixed(2)}</p>
+            <p style={{ margin: '8px 0', color: '#0f172a' }}>Total Expenses: Rs. {monthlyStats.totalExpenses.toFixed(2)}</p>
+            <p style={{ margin: '8px 0', color: '#0f172a' }}>Total Labour: Rs. {monthlyStats.totalLabour.toFixed(2)}</p>
+            <p style={{ margin: '8px 0', color: '#0f172a' }}>Profit/Loss: <ProfitLoss value={monthlyStats.profit} /></p>
           </>
         )}
       </div>
 
       <div style={cardStyle}>
         <h3>Per-Project Profit &amp; Loss</h3>
+        <label style={labelStyle}>Select Project</label>
         <select value={projectId} onChange={e => setProjectId(e.target.value)} style={inputStyle}>
           <option value="">-- Select Project --</option>
           {projects.map(p => <option key={p.id} value={p.id}>{p.title} ({p.customers?.name})</option>)}
@@ -90,11 +91,11 @@ export default function DashboardPage() {
 
         {projectStats && (
           <>
-            <p>Quoted Amount: Rs. {projectStats.quoted.toFixed(2)}</p>
-            <p>Expenses: Rs. {projectStats.totalExpenses.toFixed(2)}</p>
-            <p>Labour Payable: Rs. {projectStats.totalLabour.toFixed(2)}</p>
-            <p>GST: Rs. {projectStats.totalGst.toFixed(2)}</p>
-            <p>Profit/Loss: <ProfitLoss value={projectStats.profit} /></p>
+            <p style={{ margin: '12px 0 0', color: '#0f172a' }}>Quoted Amount: Rs. {projectStats.quoted.toFixed(2)}</p>
+            <p style={{ margin: '8px 0', color: '#0f172a' }}>Expenses: Rs. {projectStats.totalExpenses.toFixed(2)}</p>
+            <p style={{ margin: '8px 0', color: '#0f172a' }}>Labour Payable: Rs. {projectStats.totalLabour.toFixed(2)}</p>
+            <p style={{ margin: '8px 0', color: '#0f172a' }}>GST: Rs. {projectStats.totalGst.toFixed(2)}</p>
+            <p style={{ margin: '8px 0', color: '#0f172a' }}>Profit/Loss: <ProfitLoss value={projectStats.profit} /></p>
           </>
         )}
       </div>

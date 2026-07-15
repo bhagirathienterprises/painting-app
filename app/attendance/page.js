@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabaseClient'
-import { inputStyle, primaryBtnStyle, cardStyle } from '../../lib/uiStyles'
+import { inputStyle, labelStyle, primaryBtnStyle, cardStyle } from '../../lib/uiStyles'
 import { companyInfo } from '../../lib/companyInfo'
 
 const DAY_TYPES = {
@@ -67,13 +67,13 @@ export default function AttendancePage() {
           <p style={{ color: '#64748b', margin: 0, fontSize: 14 }}>Keep your labour tracking simple, clear, and modern.</p>
         </div>
 
-      <label>Project</label>
+      <label style={labelStyle}>Project</label>
       <select value={projectId} onChange={e => setProjectId(e.target.value)} style={inputStyle}>
         <option value="">-- Select Project --</option>
         {projects.map(p => <option key={p.id} value={p.id}>{p.title} ({p.customers?.name})</option>)}
       </select>
 
-      <label>Date</label>
+      <label style={labelStyle}>Date</label>
       <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
 
       <h3>Mark Attendance</h3>
