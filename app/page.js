@@ -6,6 +6,7 @@ import { companyInfo } from '../lib/companyInfo'
 import { colors, spacing, typography, shadows, borderRadius, animations } from '../lib/designSystem'
 
 const links = [
+  { href: '/projects', label: 'Projects', icon: '📁' },
   { href: '/quotation', label: 'New Quotation', icon: '📋' },
   { href: '/invoice', label: 'New Sales Invoice', icon: '💳' },
   { href: '/labour', label: 'Labour & Teams', icon: '👥' },

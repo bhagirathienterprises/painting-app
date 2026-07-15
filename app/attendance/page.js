@@ -18,6 +18,7 @@ export default function AttendancePage() {
   const [projects, setProjects] = useState([])
   const [projectId, setProjectId] = useState('')
   const [selectionMode, setSelectionMode] = useState('labour') // 'labour' or 'team'
+  const [selectedLabourId, setSelectedLabourId] = useState('') // for individual labour mode
   const [selectedTeamId, setSelectedTeamId] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [entries, setEntries] = useState({})
@@ -46,6 +47,11 @@ export default function AttendancePage() {
     }
   }
 
+  const handleLabourSelect = (labourId) => {
+    setSelectedLabourId(labourId)
+    setEntries({})
+  }
+
   const setEntry = (labourId, dayType) => setEntries(prev => ({ ...prev, [labourId]: dayType }))
 
   const saveAttendance = async () => {
@@ -54,11 +60,12 @@ export default function AttendancePage() {
     let rows = []
     
     if (selectionMode === 'labour') {
-      rows = Object.entries(entries).map(([labour_id, day_type]) => {
-        const labour = labourList.find(l => l.id === labour_id)
-        const wage = (labour?.daily_wage || 0) * DAY_TYPES[day_type].multiplier
-        return { labour_id, project_id: projectId, date, day_type, wage_calculated: wage }
-      })
+      if (!selectedLabourId) { alert('Select a labour'); return }
+      const labour = labourList.find(l => l.id === selectedLabourId)
+      const dayType = entries[selectedLabourId]
+      if (!dayType) { alert('Mark attendance for the labour'); return }
+      const wage = (labour?.daily_wage || 0) * DAY_TYPES[dayType].multiplier
+      rows = [{ labour_id: selectedLabourId, project_id: projectId, date, day_type: dayType, wage_calculated: wage }]
     } else {
       // Team mode: save attendance for each team member
       rows = Object.entries(entries).map(([labour_id, day_type]) => {
@@ -67,13 +74,14 @@ export default function AttendancePage() {
         const wage = (labour?.daily_wage || 0) * DAY_TYPES[day_type].multiplier
         return { labour_id, project_id: projectId, date, day_type, wage_calculated: wage, team_id: selectedTeamId }
       })
+      if (rows.length === 0) { alert('Mark at least one team member'); return }
     }
 
-    if (rows.length === 0) { alert('Mark at least one person'); return }
     const { error } = await supabase.from('attendance').insert(rows)
     if (error) { alert(error.message); return }
     alert(`Attendance saved for ${date}`)
     setEntries({})
+    setSelectedLabourId('')
     setSelectedTeamId('')
     loadWeeklyTotals()
   }
@@ -123,7 +131,7 @@ export default function AttendancePage() {
           style={{ display: 'flex', gap: spacing.md, marginBottom: spacing.xl }}
         >
           <button
-            onClick={() => { setSelectionMode('labour'); setSelectedTeamId(''); setEntries({}); }}
+            onClick={() => { setSelectionMode('labour'); setSelectedLabourId(''); setSelectedTeamId(''); setEntries({}); }}
             style={{
               padding: `${spacing.md} ${spacing.lg}`,
               borderRadius: borderRadius.full,
@@ -163,6 +171,17 @@ export default function AttendancePage() {
         <label style={labelStyle}>Date</label>
         <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
 
+        {/* Labour Selection (only if labour mode is active) */}
+        {selectionMode === 'labour' && (
+          <>
+            <label style={labelStyle}>Select Labour</label>
+            <select value={selectedLabourId} onChange={e => handleLabourSelect(e.target.value)} style={inputStyle}>
+              <option value="">-- Select Labour --</option>
+              {labourList.map(l => <option key={l.id} value={l.id}>{l.name} (Rs. {l.daily_wage}/day)</option>)}
+            </select>
+          </>
+        )}
+
         {/* Team Selection (only if team mode is active) */}
         {selectionMode === 'team' && (
           <>
@@ -175,7 +194,7 @@ export default function AttendancePage() {
         )}
 
         {/* Attendance Marking */}
-        {((selectionMode === 'labour' && labourList.length > 0) || (selectionMode === 'team' && selectedTeamId && teamMembers.length > 0)) && (
+        {((selectionMode === 'labour' && selectedLabourId) || (selectionMode === 'team' && selectedTeamId && teamMembers.length > 0)) && (
           <>
             <h3 style={{ color: colors.textPrimary, marginTop: spacing.xl, fontSize: typography.fontSize.h3, fontWeight: typography.fontWeight.semibold }}>
               {selectionMode === 'labour' ? 'Mark Labour Attendance' : 'Mark Team Attendance'}
@@ -187,41 +206,80 @@ export default function AttendancePage() {
               variants={animations.variants.slideUp}
               transition={animations.transition.smooth}
             >
-              {(selectionMode === 'labour' ? labourList : teamMembers).map((item, idx) => {
-                const labour = selectionMode === 'labour' ? item : item.labour
-                const labourId = selectionMode === 'labour' ? item.id : item.labour_id
-                return (
-                  <motion.div
-                    key={labourId}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05, ...animations.transition.smooth }}
-                    whileHover={{ y: -2 }}
-                    style={{ ...cardStyle, marginBottom: spacing.lg }}
-                  >
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: spacing.lg, alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontWeight: typography.fontWeight.semibold, color: colors.textPrimary, marginBottom: spacing.sm }}>
-                          {labour?.name}
+              {selectionMode === 'labour' ? (
+                // Show only selected labour
+                (() => {
+                  const labour = labourList.find(l => l.id === selectedLabourId)
+                  return labour ? (
+                    <motion.div
+                      key={labour.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={animations.transition.smooth}
+                      whileHover={{ y: -2 }}
+                      style={{ ...cardStyle, marginBottom: spacing.lg }}
+                    >
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: spacing.lg, alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: typography.fontWeight.semibold, color: colors.textPrimary, marginBottom: spacing.sm }}>
+                            {labour?.name}
+                          </div>
+                          <div style={{ fontSize: typography.fontSize.caption, color: colors.textSecondary }}>
+                            Rs. {labour?.daily_wage}/day
+                          </div>
                         </div>
-                        <div style={{ fontSize: typography.fontSize.caption, color: colors.textSecondary }}>
-                          Rs. {labour?.daily_wage}/day
-                        </div>
+                        <select 
+                          value={entries[labour.id] || ''} 
+                          onChange={e => setEntry(labour.id, e.target.value)} 
+                          style={{ ...inputStyle, margin: 0, marginBottom: 0 }}
+                        >
+                          <option value="">Not worked</option>
+                          <option value="full">Full Day (1x)</option>
+                          <option value="one_half">1.5 Day (1.5x)</option>
+                          <option value="half">Half Day (0.5x)</option>
+                        </select>
                       </div>
-                      <select 
-                        value={entries[labourId] || ''} 
-                        onChange={e => setEntry(labourId, e.target.value)} 
-                        style={{ ...inputStyle, margin: 0, marginBottom: 0 }}
-                      >
-                        <option value="">Not worked</option>
-                        <option value="full">Full Day (1x)</option>
-                        <option value="one_half">1.5 Day (1.5x)</option>
-                        <option value="half">Half Day (0.5x)</option>
-                      </select>
-                    </div>
-                  </motion.div>
-                )
-              })}
+                    </motion.div>
+                  ) : null
+                })()
+              ) : (
+                // Show all team members
+                teamMembers.map((item, idx) => {
+                  const labour = item.labour
+                  const labourId = item.labour_id
+                  return (
+                    <motion.div
+                      key={labourId}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05, ...animations.transition.smooth }}
+                      whileHover={{ y: -2 }}
+                      style={{ ...cardStyle, marginBottom: spacing.lg }}
+                    >
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: spacing.lg, alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: typography.fontWeight.semibold, color: colors.textPrimary, marginBottom: spacing.sm }}>
+                            {labour?.name}
+                          </div>
+                          <div style={{ fontSize: typography.fontSize.caption, color: colors.textSecondary }}>
+                            Rs. {labour?.daily_wage}/day
+                          </div>
+                        </div>
+                        <select 
+                          value={entries[labourId] || ''} 
+                          onChange={e => setEntry(labourId, e.target.value)} 
+                          style={{ ...inputStyle, margin: 0, marginBottom: 0 }}
+                        >
+                          <option value="">Not worked</option>
+                          <option value="full">Full Day (1x)</option>
+                          <option value="one_half">1.5 Day (1.5x)</option>
+                          <option value="half">Half Day (0.5x)</option>
+                        </select>
+                      </div>
+                    </motion.div>
+                  )
+                })
+              )}
             </motion.div>
           </>
         )}
