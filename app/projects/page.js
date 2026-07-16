@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { supabase } from '../../lib/supabaseClient'
+import { createProject, getProjects, deleteProject as deleteProjectRecord } from '../../lib/supabaseClient'
 import { inputStyle, labelStyle, primaryBtnStyle, cardStyle } from '../../lib/uiStyles'
 import { colors, spacing, typography, shadows, borderRadius, animations } from '../../lib/designSystem'
 
@@ -17,10 +17,7 @@ export default function ProjectsPage() {
   }, [])
 
   const loadProjects = async () => {
-    const { data } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data } = await getProjects()
     setProjects(data || [])
   }
 
@@ -39,13 +36,11 @@ export default function ProjectsPage() {
     }
 
     setLoading(true)
-    const { error } = await supabase.from('projects').insert([
-      {
-        title,
-        quoted_price: parseFloat(quotedPrice),
-        place,
-      },
-    ])
+    const { error } = await createProject({
+      title,
+      quoted_price: parseFloat(quotedPrice),
+      place,
+    })
     setLoading(false)
 
     if (error) {
@@ -62,7 +57,7 @@ export default function ProjectsPage() {
 
   const deleteProject = async (id) => {
     if (!confirm('Delete this project?')) return
-    const { error } = await supabase.from('projects').delete().eq('id', id)
+    const { error } = await deleteProjectRecord(id)
     if (error) {
       alert(error.message)
       return

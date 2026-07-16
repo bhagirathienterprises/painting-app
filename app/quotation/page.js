@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '../../lib/supabaseClient'
+import { } from '../../lib/supabaseClient'
 import { getNextDocNumber } from '../../lib/docNumber'
 import { generateQuotationPdf } from '../../lib/generateQuotationPdf'
 import { companyInfo } from '../../lib/companyInfo'
@@ -40,25 +40,6 @@ export default function QuotationPage() {
     }
     setLoading(true)
     try {
-      // Insert customer
-      const { data: custInsert, error: custInsertErr } = await supabase
-        .from('customers')
-        .insert({ name: customerName, type: customerType, phone: customerPhone })
-      
-      if (custInsertErr) throw custInsertErr
-
-      // Fetch the customer we just inserted
-      const { data: customers, error: custFetchErr } = await supabase
-        .from('customers')
-        .select('id')
-        .eq('phone', customerPhone)
-        .eq('name', customerName)
-      
-      if (custFetchErr) throw custFetchErr
-      if (!customers || customers.length === 0) throw new Error('Failed to get customer ID')
-      
-      const customer = customers[0]
-
       const qNo = await getNextDocNumber('quotations', 'quotation_no', 'BG')
 
       const sub = parseFloat(subtotal)
@@ -66,19 +47,29 @@ export default function QuotationPage() {
       const sgst = sub * 0.09
       const grandTotal = sub + cgst + sgst
 
-      const { error: quoteErr } = await supabase.from('quotations').insert({
-        customer_id: customer.id,
-        quotation_no: qNo,
-        prepared_by: preparedBy,
-        work_items: workItems.filter(w => w.trim() !== ''),
+      const quotePayload = {
+        customerName,
+        customerType,
+        customerPhone,
+        quotationNo: qNo,
+        preparedBy,
+        workItems: workItems.filter(w => w.trim() !== ''),
         subtotal: sub,
         cgst,
         sgst,
         grand_total: grandTotal,
         terms,
         status: 'pending',
+      }
+
+      const response = await fetch('/api/quotations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(quotePayload),
       })
-      if (quoteErr) throw quoteErr
+
+      const responseData = await response.json()
+      if (!response.ok) throw new Error(responseData.error || 'Failed to save quotation')
 
       const dateStr = new Date().toLocaleDateString('en-IN')
       const pdfBytes = await generateQuotationPdf({

@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { supabase } from '../../lib/supabaseClient'
+import { getQuotations, updateQuotationStatus, createProject, getProjects, linkQuotationToProject } from '../../lib/supabaseClient'
 import { inputStyle, labelStyle, primaryBtnStyle, cardStyle } from '../../lib/uiStyles'
 import { colors, spacing, typography, shadows, borderRadius, animations } from '../../lib/designSystem'
 
@@ -15,16 +15,13 @@ export default function QuotationsPage() {
   }, [])
 
   const loadQuotations = async () => {
-    const { data } = await supabase
-      .from('quotations')
-      .select('*, customers(name, phone, type)')
-      .order('created_at', { ascending: false })
+    const { data } = await getQuotations()
     setQuotations(data || [])
   }
 
   const updateStatus = async (id, status) => {
     setLoading(true)
-    const { error } = await supabase.from('quotations').update({ status }).eq('id', id)
+    const { error } = await updateQuotationStatus(id, status)
     setLoading(false)
     if (error) {
       alert(error.message)
@@ -36,33 +33,21 @@ export default function QuotationsPage() {
   const convertToProject = async (quotation) => {
     setLoading(true)
     try {
-      // Create project from quotation
-      const { error: projInsertErr } = await supabase
-        .from('projects')
-        .insert({
-          customer_id: quotation.customer_id,
-          title: quotation.customers.name,
-          quoted_price: quotation.grand_total,
-          status: 'ongoing',
-        })
-      if (projInsertErr) throw projInsertErr
+      const projectResult = await createProject({
+        title: quotation.customers?.name || quotation.customer_name || 'Project',
+        quoted_price: quotation.grand_total,
+        status: 'ongoing',
+      })
+      if (projectResult.error) throw projectResult.error
 
-      // Fetch the project we just inserted
-      const { data: projects, error: projFetchErr } = await supabase
-        .from('projects')
-        .select('id')
-        .eq('title', quotation.customers.name)
-        .eq('customer_id', quotation.customer_id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-      
-      if (projFetchErr) throw projFetchErr
-      if (!projects || projects.length === 0) throw new Error('Failed to get project ID')
-      
-      const project = projects[0]
+      const project = projectResult.data
+      if (!project?.id) throw new Error('Failed to create project')
 
-      // Link quotation to project
-      const { error: linkErr } = await supabase.from('quotations').update({ project_id: project.id }).eq('id', quotation.id)
+      const { data: projectsData } = await getProjects()
+      const matchingProject = (projectsData || []).find(item => item.id === project.id)
+      if (!matchingProject) throw new Error('Failed to locate created project')
+
+      const { error: linkErr } = await linkQuotationToProject(quotation.id, project.id)
       if (linkErr) throw linkErr
 
       setLoading(false)
