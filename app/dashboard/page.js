@@ -13,7 +13,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      // Only approved quotations that have actually been converted to a project
       const { data: approvedQuotes } = await supabase
         .from('quotations')
         .select('*, projects(*, customers(name))')
@@ -30,9 +29,9 @@ export default function DashboardPage() {
 
       setApprovedQuotesByProject(quotesMap)
       setProjects(approvedProjects)
+      loadMonthly(Object.keys(quotesMap))
     }
     load()
-    loadMonthly()
   }, [])
 
   const loadProjectStats = async (pid) => {
@@ -43,7 +42,6 @@ export default function DashboardPage() {
     const { data: expenses } = await supabase.from('expenses').select('amount').eq('project_id', pid)
     const { data: attendance } = await supabase.from('attendance').select('wage_calculated').eq('project_id', pid)
 
-    // Prefer real invoice numbers once invoiced; otherwise use the approved quotation
     let quoted = 0
     let totalGst = 0
     if (invoices && invoices.length > 0) {
@@ -61,15 +59,31 @@ export default function DashboardPage() {
     setProjectStats({ quoted, totalExpenses, totalLabour, totalGst, profit })
   }
 
-  const loadMonthly = async () => {
+  const loadMonthly = async (approvedProjectIds) => {
+    if (!approvedProjectIds || approvedProjectIds.length === 0) {
+      setMonthlyStats({ sales: 0, totalExpenses: 0, totalLabour: 0, profit: 0 })
+      return
+    }
+
     const startOfMonth = new Date()
     startOfMonth.setDate(1)
     startOfMonth.setHours(0, 0, 0, 0)
     const isoStart = startOfMonth.toISOString()
 
-    const { data: invoices } = await supabase.from('invoices').select('subtotal, cgst, sgst').gte('created_at', isoStart)
-    const { data: expenses } = await supabase.from('expenses').select('amount').gte('created_at', isoStart)
-    const { data: attendance } = await supabase.from('attendance').select('wage_calculated').gte('created_at', isoStart)
+    const { data: invoices } = await supabase
+      .from('invoices').select('subtotal, cgst, sgst, project_id')
+      .gte('created_at', isoStart)
+      .in('project_id', approvedProjectIds)
+
+    const { data: expenses } = await supabase
+      .from('expenses').select('amount, project_id')
+      .gte('created_at', isoStart)
+      .in('project_id', approvedProjectIds)
+
+    const { data: attendance } = await supabase
+      .from('attendance').select('wage_calculated, project_id')
+      .gte('created_at', isoStart)
+      .in('project_id', approvedProjectIds)
 
     const sales = (invoices || []).reduce((s, i) => s + i.subtotal, 0)
     const gst = (invoices || []).reduce((s, i) => s + i.cgst + i.sgst, 0)
@@ -97,7 +111,7 @@ export default function DashboardPage() {
         </div>
 
       <div style={cardStyle}>
-        <h3>This Month — Invoiced Work</h3>
+        <h3>This Month — Approved Projects Only</h3>
         {monthlyStats && (
           <>
             <p style={{ margin: '8px 0', color: '#0f172a' }}>Total Sales: Rs. {monthlyStats.sales.toFixed(2)}</p>
