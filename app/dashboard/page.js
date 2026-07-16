@@ -6,14 +6,30 @@ import { companyInfo } from '../../lib/companyInfo'
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState([])
+  const [approvedQuotesByProject, setApprovedQuotesByProject] = useState({})
   const [projectId, setProjectId] = useState('')
   const [projectStats, setProjectStats] = useState(null)
   const [monthlyStats, setMonthlyStats] = useState(null)
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from('projects').select('*, customers(name)').order('created_at', { ascending: false })
-      setProjects(data || [])
+      // Only approved quotations that have actually been converted to a project
+      const { data: approvedQuotes } = await supabase
+        .from('quotations')
+        .select('*, projects(*, customers(name))')
+        .eq('status', 'approved')
+        .not('project_id', 'is', null)
+
+      const quotesMap = {}
+      const approvedProjects = (approvedQuotes || [])
+        .filter(q => q.projects)
+        .map(q => {
+          quotesMap[q.project_id] = q
+          return q.projects
+        })
+
+      setApprovedQuotesByProject(quotesMap)
+      setProjects(approvedProjects)
     }
     load()
     loadMonthly()
@@ -21,15 +37,25 @@ export default function DashboardPage() {
 
   const loadProjectStats = async (pid) => {
     if (!pid) { setProjectStats(null); return }
-    const { data: quotes } = await supabase.from('quotations').select('grand_total').eq('project_id', pid)
-    const { data: invoices } = await supabase.from('invoices').select('grand_total, cgst, sgst').eq('project_id', pid)
+    const approvedQ = approvedQuotesByProject[pid]
+
+    const { data: invoices } = await supabase.from('invoices').select('subtotal, cgst, sgst').eq('project_id', pid)
     const { data: expenses } = await supabase.from('expenses').select('amount').eq('project_id', pid)
     const { data: attendance } = await supabase.from('attendance').select('wage_calculated').eq('project_id', pid)
 
-    const quoted = quotes?.[0]?.grand_total || 0
+    // Prefer real invoice numbers once invoiced; otherwise use the approved quotation
+    let quoted = 0
+    let totalGst = 0
+    if (invoices && invoices.length > 0) {
+      quoted = invoices.reduce((s, i) => s + i.subtotal, 0)
+      totalGst = invoices.reduce((s, i) => s + i.cgst + i.sgst, 0)
+    } else if (approvedQ) {
+      quoted = approvedQ.subtotal || 0
+      totalGst = (approvedQ.cgst || 0) + (approvedQ.sgst || 0)
+    }
+
     const totalExpenses = (expenses || []).reduce((s, e) => s + e.amount, 0)
     const totalLabour = (attendance || []).reduce((s, a) => s + a.wage_calculated, 0)
-    const totalGst = (invoices || []).reduce((s, i) => s + i.cgst + i.sgst, 0)
     const profit = quoted - totalExpenses - totalLabour - totalGst
 
     setProjectStats({ quoted, totalExpenses, totalLabour, totalGst, profit })
@@ -41,19 +67,20 @@ export default function DashboardPage() {
     startOfMonth.setHours(0, 0, 0, 0)
     const isoStart = startOfMonth.toISOString()
 
-    const { data: invoices } = await supabase.from('invoices').select('grand_total').gte('created_at', isoStart)
+    const { data: invoices } = await supabase.from('invoices').select('subtotal, cgst, sgst').gte('created_at', isoStart)
     const { data: expenses } = await supabase.from('expenses').select('amount').gte('created_at', isoStart)
     const { data: attendance } = await supabase.from('attendance').select('wage_calculated').gte('created_at', isoStart)
 
-    const sales = (invoices || []).reduce((s, i) => s + i.grand_total, 0)
+    const sales = (invoices || []).reduce((s, i) => s + i.subtotal, 0)
+    const gst = (invoices || []).reduce((s, i) => s + i.cgst + i.sgst, 0)
     const totalExpenses = (expenses || []).reduce((s, e) => s + e.amount, 0)
     const totalLabour = (attendance || []).reduce((s, a) => s + a.wage_calculated, 0)
-    const profit = sales - totalExpenses - totalLabour
+    const profit = sales - totalExpenses - totalLabour - gst
 
     setMonthlyStats({ sales, totalExpenses, totalLabour, profit })
   }
 
-  useEffect(() => { loadProjectStats(projectId) }, [projectId])
+  useEffect(() => { loadProjectStats(projectId) }, [projectId, approvedQuotesByProject])
 
   const ProfitLoss = ({ value }) => (
     <strong style={{ color: value >= 0 ? '#27ae60' : '#c0392b' }}>
@@ -70,7 +97,7 @@ export default function DashboardPage() {
         </div>
 
       <div style={cardStyle}>
-        <h3>This Month — All Projects</h3>
+        <h3>This Month — Invoiced Work</h3>
         {monthlyStats && (
           <>
             <p style={{ margin: '8px 0', color: '#0f172a' }}>Total Sales: Rs. {monthlyStats.sales.toFixed(2)}</p>
@@ -82,7 +109,7 @@ export default function DashboardPage() {
       </div>
 
       <div style={cardStyle}>
-        <h3>Per-Project Profit &amp; Loss</h3>
+        <h3>Per-Project Profit &amp; Loss (Approved projects only)</h3>
         <label style={labelStyle}>Select Project</label>
         <select value={projectId} onChange={e => setProjectId(e.target.value)} style={inputStyle}>
           <option value="">-- Select Project --</option>

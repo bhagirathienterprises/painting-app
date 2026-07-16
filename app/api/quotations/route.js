@@ -39,6 +39,7 @@ export async function POST(request) {
     }
 
     const quotationInsert = await admin.from('quotations').insert({
+      project_id: project.id,
       quotation_no: body.quotationNo,
       prepared_by: body.preparedBy,
       work_items: body.workItems || [],
