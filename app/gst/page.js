@@ -12,10 +12,17 @@ export default function GstPage() {
   const [supplierGstin, setSupplierGstin] = useState('')
   const [amount, setAmount] = useState('')
 
-  const loadTotals = async () => {
-    const { data: invoices } = await supabase.from('invoices').select('cgst, sgst')
+const loadTotals = async () => {
+    const { data: invoices } = await supabase
+      .from('invoices')
+      .select('cgst, sgst, project_id, projects(quotations(status))')
     const { data: purchaseData } = await supabase.from('purchases').select('*').order('created_at', { ascending: false })
-    const out = (invoices || []).reduce((s, i) => s + i.cgst + i.sgst, 0)
+
+    const approvedInvoices = (invoices || []).filter(inv =>
+      inv.projects?.quotations?.some(q => q.status === 'approved')
+    )
+
+    const out = approvedInvoices.reduce((s, i) => s + i.cgst + i.sgst, 0)
     const inc = (purchaseData || []).reduce((s, p) => s + p.cgst + p.sgst, 0)
     setOutgoing(out)
     setIncoming(inc)
